@@ -1,0 +1,15 @@
+{
+  "name": "grab-mysql-timer",
+  "version": "1.0.0",
+  "description": "grab mysql data in regular interval and insert it to a mongodb",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "asif rahman",
+  "license": "ISC",
+  "dependencies": {
+    "mysql": "^2.13.0",
+    "underscore": "^1.8.3"
+  }
+}
