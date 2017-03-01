@@ -20,9 +20,10 @@ connection.connect(function(err) {
 
 var botTask = function() {
     console.log(new Date(), 'bot doing somethin...');
-    let insertSQL = 'insert into dummycallcenter.tab_cdr(insert_timestamp) select now()';
-    let countSQL = 'select max(autoid) "max", min(autoid) "min", max(autoid) - min(autoid) "diff" from dummycallcenter.tab_cdr';
-    let deleteSQL = 'delete from dummycallcenter.tab_cdr where autoid < ?';
+
+    let insertSQL = 'insert into dummycallcenter.current_call_entry(id_agent,callerid, datetime_init) select ROUND((RAND() * (52-1))+1), ROUND((RAND() * (19999999999-15000000000))+15000000000), now()';
+    let countSQL = 'select max(id) "max", min(id) "min", max(id) - min(id) "diff" from dummycallcenter.current_call_entry';
+    let deleteSQL = 'delete from dummycallcenter.current_call_entry where id < ?';
     connection.query(insertSQL, function (error, results, fields) {
       if (error) throw error;
       console.log('result from insertSQL: ', results);
@@ -30,6 +31,7 @@ var botTask = function() {
     connection.query(countSQL, function (error, results, fields) {
         if (error) throw error;
         console.log('result from countSQL: ', results);
+/*        
         if(results[0].diff>9) {
             let mid = Math.floor((results[0].max+results[0].min)/2);
             connection.query(deleteSQL, [mid], function (error, results, fields) {
@@ -37,6 +39,7 @@ var botTask = function() {
                 console.log('result from deleteSQL: ', results);
             }); // connection.query deleteSQL
         }; // end if results[0].diff>9
+*/        
     }); // connection.query countSQL
 }; //botTask end
 
@@ -48,8 +51,10 @@ var runBot = function() {
     setTimeout(function() {
         botTask();
         runBot();
+        console.log(new Date(),'bot in action','==============================================')
     }, getDelay());
 };
+
 runBot();
 
 

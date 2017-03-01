@@ -1,48 +1,91 @@
-var mysql       = require('mysql');
-var _ = require('underscore');
+let mysql       = require('mysql');
+let mongoClient = require('mongodb').MongoClient;
+let _           = require('underscore');
+let LAST_ID = -1;
 
-console.log(_.VERSION);
-
-var minDelay    = 500;
-var maxDelay    = 1000;
+let minDelay    = 500; //milli seconds
+let maxDelay    = 1000; //milli seconds
 
 var connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : 'root',
-    database : 'dummycallcenter'
+    host     : '192.168.96.156',
+    user     : 'asif',
+    password : '#Asif#159#C',
+    database : 'call_center'
 }); // end connection
 
-let selectSQL = 'select distinct * from dummycallcenter.tab_cdr where autoid> ?';
+var mongoConnStr = 'mongodb://localhost:27017/weCare';
+
+let selectSQL = 
+  "select "
++ "id_agent, callerid, datetime_init, max(id) \"id\" from call_center.current_call_entry where "
++ "id_agent in('10', '11', '12', '13', '14', '15', '16', '17', '24', '28', '30', '52') "
++ "and id > ? "
++ "group by id_agent, callerid, datetime_init";
 
 var bot = {
-    lastInsertedId: 0,
     act: function() {
-        console.log(new Date, 'bot acts...');
-        console.log('lastInsertedId: ', this.lastInsertedId);
         connection.query(
             selectSQL,
-            [this.lastInsertedId],
+            [LAST_ID],
             function (error, results, fields) {
                 if(error) throw error;
-                let min = _.min(results, function(r){ return r.autoid});
-                // compare min with lastInsertedId. then either insert and then set lastInsertID
-                console.log(min.autoid)
+                if(_.size(results)) {
+                    let max = _.max(results, function(r){ return r.id});
+                    mongoClient.connect(mongoConnStr, function(err, db) {
+                        if(!err) {
+                            console.log("connected to mongo");
+                            var collection = db.collection('supCDR');
+
+                            _.each(results, function(d){
+                                collection.insert(d);
+                                console.log('=======================================================================');
+                                console.log('inserted', new Date(), d);
+
+                            }); //loop each
+
+                            LAST_ID = max.id;
+
+                            db.close();
+                        }; //end if err
+                    }); //mongoClient.connect
+                }; //end if results
             } // end method: callback
         ); //end connection.query: selectSQL
-
-
+        console.log(new Date(), 'bot acting')
         let delay = minDelay + Math.random() * (maxDelay - minDelay);
         setTimeout(this.act.bind(this), delay);
     }, //end method: act
 }; //end bot
 
+// connect to mysql db
 connection.connect(function(err) {
     if (err) {
         console.error('error connecting: ' + err.stack);
         return;
     };//end if err
     console.log('connected as id ' + connection.threadId);
-}); //end connect
+}); //end connect mysql
 
-bot.act();
+
+mongoClient.connect(mongoConnStr, function(err, db) {
+    if(!err) {
+        console.log("connected to mongo");
+        var collection = db.collection('supCDR');
+        let cursor = collection.find().sort({_id:-1}).limit(1);
+
+        cursor.next(function(err, doc){
+                if (doc != null) {
+                    LAST_ID = doc.id;
+                    bot.act();
+                }  else
+                {
+                    LAST_ID = 0;
+                    bot.act();
+                }
+        });
+        
+        db.close();
+    }; //end if err
+}); //mongoClient.connect
+
+
