@@ -10,9 +10,9 @@ let maxDelay    = 1000; //milli seconds
 process.env.TZ = 'Asia/Dhaka';
 
 var connection = mysql.createConnection({
-    host     : '192.168.96.156',
+    host     : '',
     user     : 'asif',
-    password : '#Asif#159#C',
+    password : '',
     database : 'call_center'
 }); // end connection
 
