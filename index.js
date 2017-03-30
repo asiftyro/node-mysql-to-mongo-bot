@@ -6,10 +6,13 @@ let LAST_ID = -1;
 let minDelay    = 500; //milli seconds
 let maxDelay    = 1000; //milli seconds
 
+
+process.env.TZ = 'Asia/Dhaka';
+
 var connection = mysql.createConnection({
-    host     : '',
-    user     : '',
-    password : '',
+    host     : '192.168.96.156',
+    user     : 'asif',
+    password : '#Asif#159#C',
     database : 'call_center'
 }); // end connection
 
@@ -21,6 +24,9 @@ let selectSQL =
 + "id_agent in('10', '11', '12', '13', '14', '15', '16', '17', '24', '28', '30', '52') "
 + "and id > ? "
 + "group by id_agent, callerid, datetime_init";
+
+
+    
 
 var bot = {
     act: function() {
@@ -39,8 +45,7 @@ var bot = {
                             _.each(results, function(d){
                                 collection.insert(d);
                                 console.log('=======================================================================');
-                                console.log('inserted', new Date(), d);
-
+                                console.log('inserted ', d);
                             }); //loop each
 
                             LAST_ID = max.id;
@@ -60,10 +65,10 @@ var bot = {
 // connect to mysql db
 connection.connect(function(err) {
     if (err) {
-        console.error('error connecting: ' + err.stack);
+        console.error('error connecting mysql: ' + err.stack);
         return;
     };//end if err
-    console.log('connected as id ' + connection.threadId);
+    console.log('connected to mysql as id ' + connection.threadId);
 }); //end connect mysql
 
 
